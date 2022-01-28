@@ -1,0 +1,43 @@
+.top {
+  width: 100%;
+  height: 50px;
+  background-color: #208aec;
+  position: sticky;
+  z-index: 10;
+  top: 0;
+  align-items: center;
+  font-family: "Josefin Sans", sans-serif;
+}
+.topLeft {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.topRight {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.topImg {
+  width: auto;
+  height: 40px;
+  object-fit: cover;
+}
+.topCenter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.topList {
+  margin: 0px;
+  padding: 0px;
+  list-style: none;
+}
+
+.topListItem {
+  color: blanchedalmond;
+  margin-right: 8px;
+  font-weight: 300;
+  cursor: pointer;
+}

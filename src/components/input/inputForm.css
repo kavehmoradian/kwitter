@@ -1,0 +1,12 @@
+.formInput {
+  margin-top: 40px;
+}
+
+.submitButton {
+  margin-left: 10px;
+  display: inline-block;
+}
+.input {
+  display: inline-block;
+  width: 100%;
+}
