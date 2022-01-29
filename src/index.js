@@ -7,7 +7,7 @@ import { initializeParse } from "@parse/react";
 import { AuthProvider } from "./contexts/authContext";
 
 initializeParse(
-  
+
 );
 
 ReactDOM.render(
