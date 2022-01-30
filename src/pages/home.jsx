@@ -4,23 +4,27 @@ import Content from "../components/Content/Content";
 import { useAuth } from "../contexts/authContext";
 import { Alert } from "antd";
 import { useState, useEffect } from "react";
+import { useParseQuery } from "@parse/react";
 
 export default function Home() {
   const { currentUser } = useAuth();
-  const [posts, setPosts] = useState([]);
+  //const [posts, setPosts] = useState([]);
 
-  const readPosts = async function () {
+  /*const readPosts = async function () {
     const parseQuery = new Parse.Query("Post");
     parseQuery.descending("createdAt");
     try {
-      let post = await parseQuery.find();
+      let post = parseQuery.find();
       setPosts(post);
       return true;
     } catch (error) {
       alert(`Error! ${error.message}`);
       return false;
     }
-  };
+  };*/
+  const parseQuery = new Parse.Query("Post");
+  parseQuery.descending("createdAt");
+  const { results } = useParseQuery(parseQuery);
 
   const handleSubmitPost = (value) => {
     const Post = Parse.Object.extend("Post");
@@ -31,11 +35,11 @@ export default function Home() {
       dislike: [],
       authorName: Parse.User.current().get("username"),
     });
-    readPosts();
+    //readPosts();
   };
 
   useEffect(() => {
-    readPosts();
+    //readPosts();
   }, []);
 
   return (
@@ -51,8 +55,8 @@ export default function Home() {
         <div className="">
           <InputForm submit={handleSubmitPost} />
           <div className="">
-            {posts &&
-              posts.map((user, index) => (
+            {results &&
+              results.map((user, index) => (
                 <Content
                   key={user.id}
                   id={user.id}
@@ -60,6 +64,7 @@ export default function Home() {
                   content={user.get("text")}
                   likes={user.get("like")}
                   dislikes={user.get("dislike")}
+                  time={user.get("createdAt")}
                 />
               ))}
           </div>

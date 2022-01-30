@@ -5,6 +5,7 @@ import { Card, Col, Row } from "antd";
 import RatingBtn from "../rating/btn/RatingBtn";
 import { useEffect, useState } from "react";
 import Count from "../rating/counter/Count";
+import useTime from "../../hooks/useTime";
 
 export default function Content({ id, dislikes, likes, title, content }) {
   const [likeArray, setLikeArray] = useState(likes);
@@ -110,7 +111,7 @@ export default function Content({ id, dislikes, likes, title, content }) {
           style={{ marginTop: 16 }}
           type="inner"
           title={title}
-          extra={<a href="#">More</a>}
+          extra={<p>{useTime(time)}</p>}
         >
           {<pre className="content">{content}</pre>}
           <RatingBtn handleRating={handleRating} rate={kind} />
