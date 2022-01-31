@@ -1,13 +1,25 @@
 import "./inputForm.css";
 import React from "react";
+import Parse from "parse";
 import { Form, Button, Input, Row, Col } from "antd";
 
-export default function InputForm({ submit }) {
+export default function InputForm({ disPatch }) {
   const { TextArea } = Input;
   const [form] = Form.useForm();
 
   const onFinish = (value) => {
-    submit(value);
+    const Post = Parse.Object.extend("Post");
+    const newPost = new Post();
+    newPost
+      .save({
+        text: value.content,
+        like: [],
+        dislike: [],
+        authorName: Parse.User.current().get("username"),
+      })
+      .then((post) => {
+        disPatch({ type: "add_post", payload: { newPost: post } });
+      });
     form.setFieldsValue({
       content: "",
     });

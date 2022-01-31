@@ -3,18 +3,17 @@ import React from "react";
 import Parse from "parse";
 import { Card, Col, Row } from "antd";
 import RatingBtn from "../rating/btn/RatingBtn";
-import { useEffect, useState } from "react";
+import { useReducer } from "react";
 import Count from "../rating/counter/Count";
 import useTime from "../../hooks/useTime";
+import RatingReducer from "../../reducers/ratingReducer";
 
-export default function Content({ id, dislikes, likes, title, content }) {
-  const [likeArray, setLikeArray] = useState(likes);
-  const [disLikeArray, setDisLikeArray] = useState(dislikes);
+export default function Content({ id, dislikes, likes, title, content, time }) {
   const whatKind = () => {
-    let temp = [...likeArray].filter(function (item) {
+    let temp = [...likes].filter(function (item) {
       return item === Parse.User.current().get("username");
     });
-    let temp2 = [...disLikeArray].filter(function (item) {
+    let temp2 = [...dislikes].filter(function (item) {
       return item === Parse.User.current().get("username");
     });
     if (temp.length > 0) {
@@ -25,84 +24,90 @@ export default function Content({ id, dislikes, likes, title, content }) {
       return null;
     }
   };
-  const [kind, setKind] = useState(whatKind());
-  const like = () => {
-    let post = new Parse.Object("Post");
-    setLikeArray((prev) => [...prev, Parse.User.current().get("username")]);
-    post.set("objectId", id);
-    post.set("like", [...likeArray, Parse.User.current().get("username")]);
-    try {
-      post.save();
-      setKind("liked");
-      return true;
-    } catch (error) {
-      alert(`Error! ${error.message}`);
-      return false;
-    }
-  };
-  const unLike = () => {
-    let post = new Parse.Object("Post");
-    likes = likeArray.filter(function (item) {
-      return item !== Parse.User.current().get("username");
-    });
-    setLikeArray(likes);
-    post.set("objectId", id);
-    post.set("like", [...likes]);
-    try {
-      post.save();
-      setKind(null);
-      return true;
-    } catch (error) {
-      alert(`Error! ${error.message}`);
-      return false;
-    }
-  };
-  const dislike = () => {
-    setDisLikeArray((prev) => [...prev, Parse.User.current().get("username")]);
-    let post = new Parse.Object("Post");
-    post.set("objectId", id);
-    post.set("dislike", [
-      ...disLikeArray,
-      Parse.User.current().get("username"),
-    ]);
-    try {
-      post.save();
-      setKind("disLiked");
-      return true;
-    } catch (error) {
-      alert(`Error! ${error.message}`);
-      return false;
-    }
-  };
-  const unDisLike = () => {
-    let post = new Parse.Object("Post");
-    dislikes = disLikeArray.filter(function (item) {
-      return item !== Parse.User.current().get("username");
-    });
-    setDisLikeArray(dislikes);
-    post.set("objectId", id);
-    post.set("dislike", [...dislikes]);
-    try {
-      post.save();
-      setKind(null);
-      return true;
-    } catch (error) {
-      alert(`Error! ${error.message}`);
-      return false;
-    }
-  };
+  const [state, disPatch] = useReducer(RatingReducer, {
+    likes: likes,
+    dislikes: dislikes,
+    kind: whatKind(),
+  });
+
   const handleRating = (type) => {
     if (type === "like") {
-      like();
+      let post = new Parse.Object("Post");
+      post.set("objectId", id);
+      post.set("like", [...state.likes, Parse.User.current().get("username")]);
+      try {
+        post.save();
+        disPatch({
+          type: "like",
+          payload: {
+            user: Parse.User.current().get("username"),
+            kind: "liked",
+          },
+        });
+        return true;
+      } catch (error) {
+        alert(`Error! ${error.message}`);
+        return false;
+      }
     } else if (type === "disLike") {
-      dislike();
+      let post = new Parse.Object("Post");
+      post.set("objectId", id);
+      post.set("dislike", [
+        ...state.dislikes,
+        Parse.User.current().get("username"),
+      ]);
+      try {
+        post.save();
+        disPatch({
+          type: "disLike",
+          payload: {
+            user: Parse.User.current().get("username"),
+            kind: "disLiked",
+          },
+        });
+        return true;
+      } catch (error) {
+        alert(`Error! ${error.message}`);
+        return false;
+      }
     } else if (type === "unLike") {
-      unLike();
+      let post = new Parse.Object("Post");
+      let likes = state.likes.filter(function (item) {
+        return item !== Parse.User.current().get("username");
+      });
+      post.set("objectId", id);
+      post.set("like", [...likes]);
+      try {
+        post.save();
+        disPatch({
+          type: "unLike",
+          payload: { likes: likes, kind: null },
+        });
+        return true;
+      } catch (error) {
+        alert(`Error! ${error.message}`);
+        return false;
+      }
     } else if (type === "unDisLike") {
-      unDisLike();
+      let post = new Parse.Object("Post");
+      let dislikes = state.dislikes.filter(function (item) {
+        return item !== Parse.User.current().get("username");
+      });
+      post.set("objectId", id);
+      post.set("dislike", [...dislikes]);
+      try {
+        post.save();
+        disPatch({
+          type: "unDisLike",
+          payload: { dislikes: dislikes, kind: null },
+        });
+        return true;
+      } catch (error) {
+        alert(`Error! ${error.message}`);
+        return false;
+      }
     }
   };
-  useEffect(() => {}, []);
 
   return (
     <Row>
@@ -114,8 +119,8 @@ export default function Content({ id, dislikes, likes, title, content }) {
           extra={<p>{useTime(time)}</p>}
         >
           {<pre className="content">{content}</pre>}
-          <RatingBtn handleRating={handleRating} rate={kind} />
-          <Count likes={likeArray} dislikes={disLikeArray} />
+          <RatingBtn handleRating={handleRating} rate={state.kind} />
+          <Count likes={state.likes} dislikes={state.dislikes} />
         </Card>
       </Col>
     </Row>

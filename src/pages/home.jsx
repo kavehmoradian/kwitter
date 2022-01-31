@@ -3,43 +3,26 @@ import InputForm from "../components/input/InputForm";
 import Content from "../components/Content/Content";
 import { useAuth } from "../contexts/authContext";
 import { Alert } from "antd";
-import { useState, useEffect } from "react";
-import { useParseQuery } from "@parse/react";
+import { useEffect } from "react";
+import { useReducer } from "react";
+import PostReducer from "../reducers/postReducer";
 
 export default function Home() {
   const { currentUser } = useAuth();
-  //const [posts, setPosts] = useState([]);
+  const [state, disPatch] = useReducer(PostReducer, { posts: [] });
 
-  /*const readPosts = async function () {
+  const readPosts = async function () {
     const parseQuery = new Parse.Query("Post");
     parseQuery.descending("createdAt");
-    try {
-      let post = parseQuery.find();
-      setPosts(post);
-      return true;
-    } catch (error) {
-      alert(`Error! ${error.message}`);
-      return false;
-    }
-  };*/
-  const parseQuery = new Parse.Query("Post");
-  parseQuery.descending("createdAt");
-  const { results } = useParseQuery(parseQuery);
-
-  const handleSubmitPost = (value) => {
-    const Post = Parse.Object.extend("Post");
-    const newPost = new Post();
-    newPost.save({
-      text: value.content,
-      like: [],
-      dislike: [],
-      authorName: Parse.User.current().get("username"),
+    parseQuery.find().then((post) => {
+      disPatch({ type: "read_posts", payload: { posts: post } });
     });
-    //readPosts();
+
+    return true;
   };
 
   useEffect(() => {
-    //readPosts();
+    readPosts();
   }, []);
 
   return (
@@ -53,10 +36,10 @@ export default function Home() {
         />
       ) : (
         <div className="">
-          <InputForm submit={handleSubmitPost} />
+          <InputForm disPatch={disPatch} />
           <div className="">
-            {results &&
-              results.map((user, index) => (
+            {state.posts &&
+              state.posts.map((user, index) => (
                 <Content
                   key={user.id}
                   id={user.id}
