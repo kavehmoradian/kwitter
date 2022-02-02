@@ -11,18 +11,32 @@ export default function Home() {
   const { currentUser } = useAuth();
   const [state, disPatch] = useReducer(PostReducer, { posts: [] });
 
+  const parseQuery = new Parse.Query("Post");
+
   const readPosts = async function () {
-    const parseQuery = new Parse.Query("Post");
     parseQuery.descending("createdAt");
     parseQuery.find().then((post) => {
       disPatch({ type: "read_posts", payload: { posts: post } });
     });
-
     return true;
   };
 
+  const live = () => {
+    parseQuery.subscribe().then((sub) => {
+      sub.on("open", () => {
+        readPosts();
+      });
+      sub.on("create", (post) => {
+        disPatch({ type: "add_post", payload: { newPost: post } });
+      });
+      sub.on("update", (post) => {
+        disPatch({ type: "update_post", payload: { updatedPost: post } });
+      });
+    });
+  };
+
   useEffect(() => {
-    readPosts();
+    live();
   }, []);
 
   return (

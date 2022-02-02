@@ -3,10 +3,8 @@ import React from "react";
 import Parse from "parse";
 import { Card, Col, Row } from "antd";
 import RatingBtn from "../rating/btn/RatingBtn";
-import { useReducer } from "react";
 import Count from "../rating/counter/Count";
 import useTime from "../../hooks/useTime";
-import RatingReducer from "../../reducers/ratingReducer";
 
 export default function Content({ id, dislikes, likes, title, content, time }) {
   const whatKind = () => {
@@ -24,26 +22,14 @@ export default function Content({ id, dislikes, likes, title, content, time }) {
       return null;
     }
   };
-  const [state, disPatch] = useReducer(RatingReducer, {
-    likes: likes,
-    dislikes: dislikes,
-    kind: whatKind(),
-  });
 
   const handleRating = (type) => {
     if (type === "like") {
       let post = new Parse.Object("Post");
       post.set("objectId", id);
-      post.set("like", [...state.likes, Parse.User.current().get("username")]);
+      post.set("like", [...likes, Parse.User.current().get("username")]);
       try {
         post.save();
-        disPatch({
-          type: "like",
-          payload: {
-            user: Parse.User.current().get("username"),
-            kind: "liked",
-          },
-        });
         return true;
       } catch (error) {
         alert(`Error! ${error.message}`);
@@ -52,19 +38,9 @@ export default function Content({ id, dislikes, likes, title, content, time }) {
     } else if (type === "disLike") {
       let post = new Parse.Object("Post");
       post.set("objectId", id);
-      post.set("dislike", [
-        ...state.dislikes,
-        Parse.User.current().get("username"),
-      ]);
+      post.set("dislike", [...dislikes, Parse.User.current().get("username")]);
       try {
         post.save();
-        disPatch({
-          type: "disLike",
-          payload: {
-            user: Parse.User.current().get("username"),
-            kind: "disLiked",
-          },
-        });
         return true;
       } catch (error) {
         alert(`Error! ${error.message}`);
@@ -72,17 +48,13 @@ export default function Content({ id, dislikes, likes, title, content, time }) {
       }
     } else if (type === "unLike") {
       let post = new Parse.Object("Post");
-      let likes = state.likes.filter(function (item) {
+      let Likes = likes.filter(function (item) {
         return item !== Parse.User.current().get("username");
       });
       post.set("objectId", id);
-      post.set("like", [...likes]);
+      post.set("like", [...Likes]);
       try {
         post.save();
-        disPatch({
-          type: "unLike",
-          payload: { likes: likes, kind: null },
-        });
         return true;
       } catch (error) {
         alert(`Error! ${error.message}`);
@@ -90,17 +62,13 @@ export default function Content({ id, dislikes, likes, title, content, time }) {
       }
     } else if (type === "unDisLike") {
       let post = new Parse.Object("Post");
-      let dislikes = state.dislikes.filter(function (item) {
+      let Dislikes = dislikes.filter(function (item) {
         return item !== Parse.User.current().get("username");
       });
       post.set("objectId", id);
-      post.set("dislike", [...dislikes]);
+      post.set("dislike", [...Dislikes]);
       try {
         post.save();
-        disPatch({
-          type: "unDisLike",
-          payload: { dislikes: dislikes, kind: null },
-        });
         return true;
       } catch (error) {
         alert(`Error! ${error.message}`);
@@ -119,8 +87,8 @@ export default function Content({ id, dislikes, likes, title, content, time }) {
           extra={<p>{useTime(time)}</p>}
         >
           {<pre className="content">{content}</pre>}
-          <RatingBtn handleRating={handleRating} rate={state.kind} />
-          <Count likes={state.likes} dislikes={state.dislikes} />
+          <RatingBtn handleRating={handleRating} rate={whatKind()} />
+          <Count likes={likes} dislikes={dislikes} />
         </Card>
       </Col>
     </Row>

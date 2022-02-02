@@ -10,16 +10,13 @@ export default function InputForm({ disPatch }) {
   const onFinish = (value) => {
     const Post = Parse.Object.extend("Post");
     const newPost = new Post();
-    newPost
-      .save({
-        text: value.content,
-        like: [],
-        dislike: [],
-        authorName: Parse.User.current().get("username"),
-      })
-      .then((post) => {
-        disPatch({ type: "add_post", payload: { newPost: post } });
-      });
+    newPost.save({
+      text: value.content,
+      like: [],
+      dislike: [],
+      authorName: Parse.User.current().get("username"),
+    });
+
     form.setFieldsValue({
       content: "",
     });
